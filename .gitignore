@@ -1,0 +1,5 @@
+# adding .env to git ignore
+.env
+
+#dependancies
+/node_modules
