@@ -14,7 +14,7 @@ router.post("/signup", async(req, res)=>{
     }
     const customerExist = await Customers.findOne({customer_email: customer_email});
     if(customerExist){
-        res.status(200).send({msg:"A customer already exists with the email provided, Please try to login"});
+        res.status(200).send({msg:"A customer already exists with the email provided, Please try to login", token:"customer-already-exists"});
     }
     else{
         const customer = new Customers(newCustomerData);
