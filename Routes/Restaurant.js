@@ -32,7 +32,7 @@ router.post("/signup", async (req, res) => {
     if(newRestaurantAdded){
         console.log(newRestaurantAdded);
         const jwtToken = jwt.sign(newRestaurantAdded.toJSON(), "mysecretkey");
-        res.status(200).send({msg:"New Restaurant Added successfully", token:jwtToken});
+        res.status(200).send({msg:"New Restaurant Added successfully"});
     }
     else{
         res.status(500).send({msg:"Internal Server Error"});
@@ -46,7 +46,8 @@ router.post("/login", async (req, res)=>{
     const restaurantExist = await Restaurants.findOne({restaurant_email:restaurant_email});
     if(restaurantExist){
         if(restaurantExist.restaurant_password===restaurant_password){
-            const jwtToken = jwt.sign(restaurantExist.toJSON(), "mysecretkey");
+            const resturantData = {r_id:restaurantExist._id}
+            const jwtToken = jwt.sign(resturantData, "mysecretkey");
             res.status(200).send({msg:"Restaurant Login Successful", token:jwtToken});
         }
         else{
