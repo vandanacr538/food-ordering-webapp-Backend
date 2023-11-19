@@ -59,4 +59,19 @@ router.post("/login", async (req, res)=>{
     }
 });
 
+// API to get Restaurant Details
+router.get("/get_restaurant_details", async (req, res)=>{
+  const decodeToken=jwt.verify(req.body.token, "mysecretkey");
+  console.log(decodeToken);
+  const restaurantDetails = await Restaurants.findOne({_id:decodeToken.r_id});
+  if(restaurantDetails){
+    const jwtToken=jwt.sign(restaurantDetails.toJSON(), "mysecretkey");
+    res.status(200).send({token:jwtToken});
+  }
+  else{
+    res.status(500).send({msg:"Internal Server Error"});
+  }
+
+});
+
 module.exports=router;

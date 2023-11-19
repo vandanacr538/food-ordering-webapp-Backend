@@ -71,4 +71,17 @@ router.delete("/delete_food_item", async (req, res)=>{
     }
 });
 
+// API for Restaurant to Change the Availability/Stock of food.
+router.put("/change_food_stock", async (req, res)=>{
+    const {_id, item_stock} = req.body;
+    const stockUpdated = await Food_List.findOneAndUpdate({_id:_id}, {item_stock:item_stock});
+    console.log(stockUpdated );
+    if(stockUpdated){
+        res.status(200).send({msg:"Stock of this food item updated successfully"});
+    }
+    else{
+        res.status(500).send({msg:"Internal Server Error"});
+    }
+});
+
 module.exports=router;
