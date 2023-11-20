@@ -1,8 +1,10 @@
 const express = require("express");
 const router = express.Router();
 const jwt = require("jsonwebtoken");
+const axios = require("axios");
 const { Cart, Session } = require("../Schema/CartSchema");
 const Food_List = require("../Schema/FoodSchema");
+const { Order_details, Ordered_items } = require("../Schema/OrderSchema");
 
 
 // API for Customer to add to cart.
@@ -114,6 +116,64 @@ router.get("/getcart", async (req, res)=>{
         Promise.all(itemsInCart).then((resp) => {
             res.status(200).send({ result: resp });
         });
+    }
+});
+
+// API for Customer to Checkout
+router.post("/checkout", async (req, res)=>{
+    const {cust_id}= jwt.verify(req.body.token, "mysecretkey");
+    const getTotalPrice = await Session.findOne({customer_id:cust_id});
+    if(getTotalPrice && getTotalPrice.total_price){
+        const fetchCart = await Cart.find({customer_id:cust_id});
+        if(fetchCart){
+            let itemsInCart = fetchCart.map(async (element) => {
+                return {
+                  fim: await Food_List.findById(element.food_item_id),
+                  quan: element.selected_quantity,
+                };
+            });
+            Promise.all(itemsInCart).then(async (response) => {
+                const newOrderData = { customer_id:cust_id, total_price: getTotalPrice.total_price};
+                const order = new Order_details(newOrderData);
+                const newOrderAdded = await order.save();
+                if(newOrderAdded){
+                    const orderSuccess = response.map(async (element)=>{
+                        const newOrderedItems = {
+                            order_id: newOrderAdded._id,
+                            food_item_id: element.fim._id,
+                            ordered_item_quantity: element.quan
+                        };
+                        const orderedItems = new Ordered_items(newOrderedItems);
+                        return await orderedItems.save();
+                    });
+                    Promise.all(orderSuccess).then(async(response)=>{
+                        const cleanup = await axios.post("http://localhost:8080/cart/cleanup", 
+                        {},
+                        {
+                            headers: {
+                            Authorization: req.body.token,
+                            },
+                        });
+                        if (response && cleanup.status == 200) {
+                            res.status(200).send("Order created successfully");
+                        }
+                    });
+                }
+            });
+        }
+    }
+});
+
+// API for customer to cleanup the cart 
+router.post("/cleanup", async (req, res) => {
+    const {cust_id}=jwt.verify(req.headers.authorization, "mysecretkey");
+    const cleanup = await Cart.deleteMany({ customer_id:cust_id });
+    const deleteSession = await Session.deleteOne({ customer_id:cust_id });
+    if (cleanup && deleteSession) {
+      res.status(200).send("successfull");
+    }
+    else{
+        res.status(500).send({msg:"Internal Server Error"});
     }
 });
 
