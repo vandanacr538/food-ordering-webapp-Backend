@@ -36,7 +36,9 @@ router.post("/login", async(req, res)=>{
     console.log(customerExist);
     if(customerExist){
         if(customerExist.customer_password===customer_password){
-            const jwtToken = jwt.sign(customerExist.toJSON(), "mysecretkey");
+            const customerData = {cust_id:customerExist._id};
+            const jwtToken = jwt.sign(customerData, "mysecretkey");
+            console.log(jwtToken);
             res.status(200).send({msg:"Login successful", token:jwtToken});
         }
         else{

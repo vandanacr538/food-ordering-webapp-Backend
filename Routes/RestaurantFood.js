@@ -84,4 +84,15 @@ router.put("/change_food_stock", async (req, res)=>{
     }
 });
 
+// API to get full food items list
+router.get("/get_full_food_itemslist", async (req, res)=>{
+    const fullFoodList = await Food_List.find({});
+    if(fullFoodList){
+        res.status(200).send(fullFoodList);
+    }
+    else{
+        res.status(500).send({msg:"Internal Server Error"});
+    }
+});
+
 module.exports=router;
