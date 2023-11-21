@@ -21,11 +21,7 @@ const food_list = new mongoose.Schema({
         type:String,
         required:true
     },
-    // item_picture:{
-    //     type:String,
-    //     required:true
-    // },
-    item_stock:{
+    item_picture_url:{
         type:String,
         required:true
     }

@@ -1,37 +1,89 @@
 const express = require("express");
 const router = express.Router();
 const jwt = require("jsonwebtoken");
+const cloudinary = require("../helper/CloudinaryConfig");
+const multer = require("multer");
+const axios = require("axios");
 const Food_List = require("../Schema/FoodSchema");
 
+const imgConfig = multer.diskStorage({});
+const imgFilter = (req, file, callback) => {
+  if (
+    file.mimetype.split("/")[1] === "jpeg" ||
+    file.mimetype.split("/")[1] === "jpg" ||
+    file.mimetype.split("/")[1] === "png"
+  ) {
+    callback(null, true);
+  } 
+  else{
+    callback(new multer.MulterError(-1), false);
+  }
+};
+const upload =multer({
+    storage: imgConfig,
+    fileFilter: imgFilter,
+}).single("item_picture_url");
+
+const uploadImage=(req,res,next)=>{
+    try{
+        upload(req,res,(err)=>{
+            if(err){
+                if(err.code===-1){
+                    console.log("Invalid file type! Please upload .png, jpg, jpeg files");
+                }
+            }
+            else{
+                console.log("file uploaded successfully"); 
+                console.log(req.file);
+                next();
+            }
+        }) 
+    }
+    catch(e){
+        console.log(e)
+    }
+}
 
 // API for Restaurant to Add food item
-router.post("/add_food_item", async (req, res)=>{
-    const {item_name, item_quantity, item_price, item_description, item_stock} = req.body;
-    const {r_id}=jwt.verify(req.body.token, "mysecretkey");
-    const newFoodItem = {
-        restaurant_id:r_id,
-        item_name:item_name,
-        item_quantity:item_quantity,
-        item_price:item_price,
-        item_description:item_description,
-        item_stock:item_stock
-    };
-    const foodItemExists = await Food_List.findOne({restaurant_id:r_id, item_name:item_name});
-    if(foodItemExists){
-        console.log(foodItemExists);
-        res.status(200).send({msg:"Food item with same name already exists in your Menu", token:"food-item-already-exits"});
-    }
-    else{
-        const foodItem = new Food_List(newFoodItem);
-        const newFoodItemAdded = await foodItem.save();
-        console.log(newFoodItemAdded);
-        if(newFoodItemAdded){
-            res.status(200).send({msg:"New Food Item Added successfully", foodItem:newFoodItem});
+router.post("/add_food_item", uploadImage, async (req, res)=>{
+    try{
+        console.log(req.body);
+        const { item_name, item_quantity, item_price, item_description } = req.body;
+        const uploadToCloud = await cloudinary.uploader.upload(req.file.path);
+        if(uploadToCloud){
+            const { secure_url } = uploadToCloud;
+            console.log(secure_url);
+            const {r_id}=jwt.verify(req.headers.authorization, "mysecretkey");
+            console.log(r_id)
+            const newFoodItem = {
+                restaurant_id:r_id,
+                item_name:item_name,
+                item_quantity:item_quantity,
+                item_price:item_price,
+                item_description:item_description,
+                item_picture_url:secure_url,
+            };
+            const foodItemExists = await Food_List.findOne({restaurant_id:r_id, item_name:item_name});
+            if(foodItemExists){
+                console.log(foodItemExists);
+                res.status(200).send({msg:"Food item with same name already exists in your Menu", token:"food-item-already-exits"});
+            }
+            else{
+                const foodItem = new Food_List(newFoodItem);
+                const newFoodItemAdded = await foodItem.save();
+                console.log(newFoodItemAdded);
+                if(newFoodItemAdded){
+                    res.status(200).send({msg:"New Food Item Added successfully", foodItem:newFoodItem});
+                }
+                else{
+                    res.status(500).send({msg:"Internal Server Error"});
+                }
+            }
         }
-        else{
-            res.status(500).send({msg:"Internal Server Error"});
-        }
     }
+    catch(e){
+        console.log(e);
+    }    
 });
 
 // API for Restaurant to Update food item
@@ -46,8 +98,7 @@ router.put("/update_food_item", async (req, res)=>{
             item_name:item_name,
             item_quantity:item_quantity,
             item_price:item_price,
-            item_description:item_description,
-            item_stock:item_stock
+            item_description:item_description
         });
         if(updateFoodItem){
             res.status(200).send({msg:"New Food Item Added successfully", updatedFoodItem:updateFoodItem});      
