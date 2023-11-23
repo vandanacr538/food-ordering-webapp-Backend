@@ -46,8 +46,7 @@ router.post("/login", async (req, res)=>{
     const restaurantExist = await Restaurants.findOne({restaurant_email:restaurant_email});
     if(restaurantExist){
         if(restaurantExist.restaurant_password===restaurant_password){
-            const resturantData = {r_id:restaurantExist._id}
-            const jwtToken = jwt.sign(resturantData, "mysecretkey");
+            const jwtToken = jwt.sign(restaurantExist.toJSON(), "mysecretkey");
             res.status(200).send({msg:"Restaurant Login Successful", token:jwtToken});
         }
         else{
@@ -61,12 +60,40 @@ router.post("/login", async (req, res)=>{
 
 // API to get Restaurant Details
 router.get("/get_restaurant_details", async (req, res)=>{
-  const decodeToken=jwt.verify(req.body.token, "mysecretkey");
-  console.log(decodeToken);
-  const restaurantDetails = await Restaurants.findOne({_id:decodeToken.r_id});
+  const decodedRToken=jwt.verify(req.headers.authorization, "mysecretkey");
+  const restaurantDetails = await Restaurants.findOne({_id:decodedRToken._id});
   if(restaurantDetails){
     const jwtToken=jwt.sign(restaurantDetails.toJSON(), "mysecretkey");
     res.status(200).send({token:jwtToken});
+  }
+  else{
+    res.status(500).send({msg:"Internal Server Error"});
+  }
+
+});
+
+// API to edit Restaurant Details
+router.put("/edit_restaurant_details", async (req, res)=>{
+  const decodedRToken=jwt.verify(req.headers.authorization, "mysecretkey");
+  const {
+    restaurant_name,
+    restaurant_email,
+    restaurant_address,
+    restaurant_openingtime,
+    restaurant_closingtime,
+    restaurant_password,
+  } = req.body;
+  const updatedRestDetails = await Restaurants.findOneAndUpdate({_id:decodedRToken._id},{
+    restaurant_name:restaurant_name,
+    restaurant_email:restaurant_email,
+    restaurant_address:restaurant_address,
+    restaurant_openingtime:restaurant_openingtime,
+    restaurant_closingtime:restaurant_closingtime,
+    restaurant_password:restaurant_password,
+  });
+  if(updatedRestDetails){
+    const jwtToken=jwt.sign(updatedRestDetails.toJSON(), "mysecretkey");
+    res.status(200).send({msg:"Your Restaurant Details updated successfully",token:jwtToken});
   }
   else{
     res.status(500).send({msg:"Internal Server Error"});

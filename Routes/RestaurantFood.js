@@ -30,6 +30,7 @@ const uploadImage=(req,res,next)=>{
             if(err){
                 if(err.code===-1){
                     console.log("Invalid file type! Please upload .png, jpg, jpeg files");
+                    res.status(422).send({msg: "Invalid file type! Please upload .png, jpg, jpeg format images only"});
                 }
             }
             else{
@@ -53,17 +54,17 @@ router.post("/add_food_item", uploadImage, async (req, res)=>{
         if(uploadToCloud){
             const { secure_url } = uploadToCloud;
             console.log(secure_url);
-            const {r_id}=jwt.verify(req.headers.authorization, "mysecretkey");
-            console.log(r_id)
+            const decodedRToken=jwt.verify(req.headers.authorization, "mysecretkey");
+            const {_id} = decodedRToken;
             const newFoodItem = {
-                restaurant_id:r_id,
+                restaurant_id:_id,
                 item_name:item_name,
                 item_quantity:item_quantity,
                 item_price:item_price,
                 item_description:item_description,
                 item_picture_url:secure_url,
             };
-            const foodItemExists = await Food_List.findOne({restaurant_id:r_id, item_name:item_name});
+            const foodItemExists = await Food_List.findOne({restaurant_id:_id, item_name:item_name});
             if(foodItemExists){
                 console.log(foodItemExists);
                 res.status(200).send({msg:"Food item with same name already exists in your Menu", token:"food-item-already-exits"});
@@ -73,7 +74,7 @@ router.post("/add_food_item", uploadImage, async (req, res)=>{
                 const newFoodItemAdded = await foodItem.save();
                 console.log(newFoodItemAdded);
                 if(newFoodItemAdded){
-                    res.status(200).send({msg:"New Food Item Added successfully", foodItem:newFoodItem});
+                    res.status(200).send({msg:"New food item added successfully", foodItem:newFoodItem});
                 }
                 else{
                     res.status(500).send({msg:"Internal Server Error"});
