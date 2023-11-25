@@ -51,6 +51,8 @@ router.post("/add_food_item", uploadImage, async (req, res)=>{
     try{
         console.log(req.body);
         const { item_name, item_quantity, item_price, item_description } = req.body;
+        const decodedRToken=jwt.verify(req.headers.authorization, "mysecretkey");
+        const {_id} = decodedRToken;
         const foodItemExists = await Food_List.findOne({restaurant_id:_id, item_name:item_name});
         if(foodItemExists){
             console.log(foodItemExists);
@@ -61,8 +63,6 @@ router.post("/add_food_item", uploadImage, async (req, res)=>{
             if(uploadToCloud){
                 const { secure_url } = uploadToCloud;
                 console.log(secure_url);
-                const decodedRToken=jwt.verify(req.headers.authorization, "mysecretkey");
-                const {_id} = decodedRToken;
                 const newFoodItem = {
                     restaurant_id:_id,
                     item_name:item_name,
