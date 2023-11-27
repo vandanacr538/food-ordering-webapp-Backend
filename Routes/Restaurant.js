@@ -101,4 +101,15 @@ router.put("/edit_restaurant_details", async (req, res)=>{
 
 });
 
+// API for get all Restaurants List
+router.get("/get_restaurantslist", async (req, res)=>{
+  const restaurantsList = await Restaurants.find({});
+  if(restaurantsList){
+      res.status(200).send(restaurantsList);
+  }
+  else{
+      res.status(500).send({msg:"Internal Server Error"});
+  }
+});
+
 module.exports=router;

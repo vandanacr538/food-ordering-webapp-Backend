@@ -167,8 +167,9 @@ router.put("/change_food_stock", async (req, res)=>{
 });
 
 // API for particular restaurant to get it's complete food items list
-router.get("/get_rest_fooditemslist", async (req, res)=>{
+router.post("/get_rest_fooditemslist", async (req, res)=>{
     const decodedRToken=jwt.verify(req.headers.authorization, "mysecretkey");
+    console.log(decodedRToken);
     const foodItemsList = await Food_List.find({restaurant_id:decodedRToken._id});
     if(foodItemsList){
         res.status(200).send(foodItemsList);

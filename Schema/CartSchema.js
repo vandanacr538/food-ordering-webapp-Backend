@@ -9,7 +9,7 @@ const cart = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "Food_List",
     },
-    selected_quantity: {
+    quantity: {
         type: Number,
         required: true,
     },
