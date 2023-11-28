@@ -21,10 +21,22 @@ const ordered_item = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "Food_List",
     },
+    item_restaurant_id: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Restaurants",
+    },
+    item_name:{
+        type:String,
+        required:true
+    },
     ordered_item_quantity: {
         type: Number,
         required: true,
     },
+    order_status:{
+        type:Boolean,
+        default:true
+    }
 });
 
 const Order_details = mongoose.model("order_detail", order_detail);

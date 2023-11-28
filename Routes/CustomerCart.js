@@ -141,6 +141,7 @@ router.post("/get_totalprice", async (req, res)=>{
         const {_id}=jwt.verify(req.headers.authorization, "mysecretkey");
         const totalPrice = await Session.find({customer_id:_id});
         if(totalPrice){
+            console.log(totalPrice);
             res.status(200).send(totalPrice);
         }
     }
@@ -260,6 +261,8 @@ router.post("/checkout", async (req, res)=>{
                             const newOrderedItems = {
                                 order_id: newOrderAdded._id,
                                 food_item_id: element.fim._id,
+                                item_restaurant_id: element.fim.restaurant_id,
+                                item_name: element.fim.item_name,
                                 ordered_item_quantity: element.quan
                             };
                             const orderedItems = new Ordered_items(newOrderedItems);
