@@ -169,7 +169,6 @@ router.put("/change_food_stock", async (req, res)=>{
 // API for particular restaurant to get it's complete food items list
 router.post("/get_rest_fooditemslist", async (req, res)=>{
     const decodedRToken=jwt.verify(req.headers.authorization, "mysecretkey");
-    console.log(decodedRToken);
     const foodItemsList = await Food_List.find({restaurant_id:decodedRToken._id});
     if(foodItemsList){
         res.status(200).send(foodItemsList);
@@ -184,6 +183,18 @@ router.get("/get_full_food_itemslist", async (req, res)=>{
     const fullFoodList = await Food_List.find({});
     if(fullFoodList){
         res.status(200).send(fullFoodList);
+    }
+    else{
+        res.status(500).send({msg:"Internal Server Error"});
+    }
+});
+
+// API to get restaurant food menu
+router.post("/getrest_foodmenu", async(req, res)=>{
+    const foodItemsList = await Food_List.find({restaurant_id:req.headers.authorization});
+    console.log(foodItemsList)
+    if(foodItemsList){
+        res.status(200).send(foodItemsList);
     }
     else{
         res.status(500).send({msg:"Internal Server Error"});
