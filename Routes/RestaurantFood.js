@@ -142,62 +142,87 @@ router.put("/update_food_item", uploadImage, async (req, res)=>{
 
 // API for Restaurant to Delete food item
 router.delete("/delete_food_item", async (req, res)=>{
-    const {_id, restaurant_id, item_name} = req.body;
-    const foodItemDeleted = await Food_List.deleteOne({_id:_id, restaurant_id:restaurant_id}); 
-    console.log(foodItemDeleted);
-    if(foodItemDeleted.deletedCount){
-        res.status(200).send({msg: item_name+" deleted from your menu"})
+    try{
+        const {_id, restaurant_id, item_name} = req.body;
+        const foodItemDeleted = await Food_List.deleteOne({_id:_id, restaurant_id:restaurant_id}); 
+        console.log(foodItemDeleted);
+        if(foodItemDeleted.deletedCount){
+            res.status(200).send({msg: item_name+" deleted from your menu"})
+        }
+        else{
+            res.status(500).send({msg:"Internal Server Error"});
+        }
     }
-    else{
-        res.status(500).send({msg:"Internal Server Error"});
+    catch(e){
+        console.log(e);
     }
 });
 
 // API for Restaurant to Change the Availability/Stock of food.
 router.put("/change_food_stock", async (req, res)=>{
-    const {_id, item_stock} = req.body;
-    const stockUpdated = await Food_List.findOneAndUpdate({_id:_id}, {item_stock:item_stock});
-    console.log(stockUpdated );
-    if(stockUpdated){
-        res.status(200).send({msg:"Stock of this food item updated successfully"});
+    try{
+        const {_id, item_stock} = req.body;
+        const stockUpdated = await Food_List.findOneAndUpdate({_id:_id}, {item_stock:item_stock});
+        console.log(stockUpdated );
+        if(stockUpdated){
+            res.status(200).send({msg:"Stock of this food item updated successfully"});
+        }
+        else{
+            res.status(500).send({msg:"Internal Server Error"});
+        }
     }
-    else{
-        res.status(500).send({msg:"Internal Server Error"});
+    catch(e){
+        console.log(e);
     }
 });
 
 // API for particular restaurant to get it's complete food items list
 router.post("/get_rest_fooditemslist", async (req, res)=>{
-    const decodedRToken=jwt.verify(req.headers.authorization, "mysecretkey");
-    const foodItemsList = await Food_List.find({restaurant_id:decodedRToken._id});
-    if(foodItemsList){
-        res.status(200).send(foodItemsList);
+    try{
+        const decodedRToken=jwt.verify(req.headers.authorization, "mysecretkey");
+        const foodItemsList = await Food_List.find({restaurant_id:decodedRToken._id});
+        if(foodItemsList){
+            res.status(200).send(foodItemsList);
+        }
+        else{
+            res.status(500).send({msg:"Internal Server Error"});
+        }
     }
-    else{
-        res.status(500).send({msg:"Internal Server Error"});
+    catch(e){
+        console.log(e);
     }
 });
 
 // API to get full food items list
 router.get("/get_full_food_itemslist", async (req, res)=>{
-    const fullFoodList = await Food_List.find({});
-    if(fullFoodList){
-        res.status(200).send(fullFoodList);
+    try{
+        const fullFoodList = await Food_List.find({});
+        if(fullFoodList){
+            res.status(200).send(fullFoodList);
+        }
+        else{
+            res.status(500).send({msg:"Internal Server Error"});
+        }
     }
-    else{
-        res.status(500).send({msg:"Internal Server Error"});
+    catch(e){
+        console.log(e);
     }
 });
 
 // API to get restaurant food menu
 router.post("/getrest_foodmenu", async(req, res)=>{
-    const foodItemsList = await Food_List.find({restaurant_id:req.headers.authorization});
-    console.log(foodItemsList)
-    if(foodItemsList){
-        res.status(200).send(foodItemsList);
+    try{
+        const foodItemsList = await Food_List.find({restaurant_id:req.headers.authorization});
+        console.log(foodItemsList)
+        if(foodItemsList){
+            res.status(200).send(foodItemsList);
+        }
+        else{
+            res.status(500).send({msg:"Internal Server Error"});
+        }
     }
-    else{
-        res.status(500).send({msg:"Internal Server Error"});
+    catch(e){
+        console.log(e);
     }
 });
 
